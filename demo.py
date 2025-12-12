@@ -32,8 +32,13 @@ def main():
     parser.add_argument("--video_path", type=str, default=None, help="Path to input video")
     parser.add_argument("--mock", action="store_true", default=True, help="Use mock weights (default True for portfolio demo)")
     parser.add_argument("--output_path", type=str, default="output.mp4", help="Path to save processed video")
+    parser.add_argument("--max_frames", type=int, default=50, help="Maximum frames to process (default 50 for quick demo)")
+    parser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose logging")
     
     args = parser.parse_args()
+    
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     # Initialize Modules
     logger.info("Initializing Pipeline Modules...")
@@ -75,7 +80,7 @@ def main():
             # Add noise to make it look alive
             noise = np.random.randint(0, 50, (720, 1280, 3), dtype=np.uint8)
             frame = cv2.addWeighted(frame, 0.8, noise, 0.2, 0)
-            if frame_idx > 100: # Stop after 100 frames in mock
+            if frame_idx >= args.max_frames: # Use max_frames parameter
                 break
         
         # Initialize Writer once we know frame size
@@ -139,10 +144,6 @@ def main():
             logger.info(f"Frame {frame_idx}: Processed {len(tracks)} objects. Events: {len(events)}")
 
         frame_idx += 1
-        
-        # Break for safety
-        if frame_idx > 200:
-            break
 
     logger.info("Processing Complete.")
     if cap:
